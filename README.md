@@ -1,21 +1,16 @@
-autorip
+autorip-v2
 =======
-Autorip is a automated dvd and bluray ripping and encoding with makemkv and handbrake
+Autorip-v2 is a automated dvd and bluray ripping and encoding with makemkv and ffmpeg
 
 -------------
 
 To do
 
- - ~~Desktop Notifications~~
- - Hand Brake conversion handover
- - ~~Add a Windows Power Shell script~~
- - Add mac script
+ - ~~FFmpeg conversion handover~~
  - ~~Disc detection~~
- - Specify file name to save as
+ - Asynchronous transcode with queue
+ - ~~Nvidia GPU Transcode~~
+ - Automatic file detection/rename
 
 ---
-My email: [ej@ejb1123.tk](mailto:ej@ejb1123.tk)
-
-Please donate if you like this project.
-
-Bitcoin: 1Dk21ixijwJ6chANJQdNEdSPGr1t44XP3Z
+Original idea/script from ejb1123.
