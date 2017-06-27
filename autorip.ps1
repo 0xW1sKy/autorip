@@ -121,8 +121,8 @@ $file = Get-Item -Path $mediaPath -ErrorAction stop
 
 if($file.extension){
 $ffmpeg = "C:\Program Files\ffmpeg\bin\ffmpeg.exe"
-	$oldFile = $file.DirectoryName + "\" + $file.BaseName + $file.Extension;
-	$newFile = $file.DirectoryName + "\" + $file.BaseName + '-converted' + ".mkv";
+    $oldFile = $file.DirectoryName + "\" + $file.BaseName + $file.Extension;
+    $newFile = $file.DirectoryName + "\" + $file.BaseName + '-converted' + ".mkv";
     $ffarg1 = "-hide_banner"
     $ffarg2 = "-analyzeduration"
     $ffarg3 = "200M"
@@ -130,33 +130,33 @@ $ffmpeg = "C:\Program Files\ffmpeg\bin\ffmpeg.exe"
     $ffarg5 = "200M"
     $ffarg6 = "-fix_sub_duration"	
     $ffarg7 = "-n"
-	$ffarg8 = "-fflags"
-	$ffarg9 = "+genpts"
+    $ffarg8 = "-fflags"
+    $ffarg9 = "+genpts"
     $ffarg10 = "-hwaccel"
     $ffarg11 = "cuvid"
     $ffarg12 = "-c:v"
     $ffarg13 = "mpeg2_cuvid"
-	$ffarg14 = "-i"
-	$ffarg15 = "$oldFile"
+    $ffarg14 = "-i"
+    $ffarg15 = "$oldFile"
     $ffarg16 = "-map"
     $ffarg17 = "0"
     $ffarg18 = "-c"
     $ffarg19 = "copy"
-	$ffarg20 = "-codec:v"
+    $ffarg20 = "-codec:v"
     $ffarg21 = "h264_nvenc"
-	$ffarg22 = "-preset"
+    $ffarg22 = "-preset"
     $ffarg23 = "llhq"
     $ffarg24 = "-profile:v"
     $ffarg25 = "high"
     $ffarg26 = "-b:v"
     $ffarg27 = "5M"
-	$ffarg28 = "-codec:a"
-	$ffarg29 = "copy"
+    $ffarg28 = "-codec:a"
+    $ffarg29 = "copy"
     $ffarg34 = "-codec:s"
     $ffarg35 = "copy"
-	$ffarg36 = "$newFile"
+    $ffarg36 = "$newFile"
     $ffargs = @( $ffarg1, $ffarg2, $ffarg3, $ffarg4, $ffarg5, $ffarg6, $ffarg7, $ffarg8, $ffarg9, $ffarg14, $ffarg15, $ffarg16, $ffarg17, $ffarg18, $ffarg19, $ffarg20, $ffarg21, $ffarg22, $ffarg23, $ffarg24, $ffarg25, $ffarg26, $ffarg27, $ffarg28, $ffarg29, $ffarg30, $ffarg31, $ffarg32, $ffarg33, $ffarg34, $ffarg35, $ffarg36)
-	$ffcmd = &$ffmpeg $ffargs 2>&1 | write-host
+    $ffcmd = &$ffmpeg $ffargs 2>&1 | write-host
     remove-item $oldfile
 }
 else
