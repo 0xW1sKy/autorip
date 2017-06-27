@@ -148,10 +148,6 @@ $ffmpeg = "C:\Program Files\ffmpeg\bin\ffmpeg.exe"
     $ffarg23 = "llhq"
     $ffarg24 = "-profile:v"
     $ffarg25 = "high"
-    $ffarg37 = "-qmax"
-    $ffarg38 = "51"
-    $ffarg39 = "-qmin"
-    $ffarg40 = "15"
     $ffarg26 = "-b:v"
     $ffarg27 = "5M"
 	$ffarg28 = "-codec:a"
@@ -159,7 +155,7 @@ $ffmpeg = "C:\Program Files\ffmpeg\bin\ffmpeg.exe"
     $ffarg34 = "-codec:s"
     $ffarg35 = "copy"
 	$ffarg36 = "$newFile"
-    $ffargs = @( $ffarg1, $ffarg2, $ffarg3, $ffarg4, $ffarg5, $ffarg6, $ffarg7, $ffarg8, $ffarg9, $ffarg14, $ffarg15, $ffarg16, $ffarg17, $ffarg18, $ffarg19, $ffarg20, $ffarg21, $ffarg22, $ffarg23, $ffarg24, $ffarg25, $ffarg37, $ffarg38, $ffarg39, $ffarg40, $ffarg26, $ffarg27, $ffarg28, $ffarg29, $ffarg30, $ffarg31, $ffarg32, $ffarg33, $ffarg34, $ffarg35, $ffarg36)
+    $ffargs = @( $ffarg1, $ffarg2, $ffarg3, $ffarg4, $ffarg5, $ffarg6, $ffarg7, $ffarg8, $ffarg9, $ffarg14, $ffarg15, $ffarg16, $ffarg17, $ffarg18, $ffarg19, $ffarg20, $ffarg21, $ffarg22, $ffarg23, $ffarg24, $ffarg25, $ffarg26, $ffarg27, $ffarg28, $ffarg29, $ffarg30, $ffarg31, $ffarg32, $ffarg33, $ffarg34, $ffarg35, $ffarg36)
 	$ffcmd = &$ffmpeg $ffargs 2>&1 | write-host
     remove-item $oldfile
 }
