@@ -1,5 +1,3 @@
-    #Copyright (C) 2013  E.J. Bevenour
-
     #This program is free software; you can redistribute it and/or modify
     #it under the terms of the GNU General Public License as published by
     #the Free Software Foundation; either version 2 of the License, or
@@ -14,25 +12,39 @@
     #with this program; if not, write to the Free Software Foundation, Inc.,
     #51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
-Function Get-ADComputerCDRomInfo
+    #usage: autorip-v2 -todir "C:\rips" -device "D"
+
+Function autorip-v2
 { 
+
+param (
+    [string]$todir = "",
+    [string]$device = "" 
+    )
         # Function variables
         $deviceId = ""
         $volumeName = ""
         $err = ""
-        $makemkvpath = 'C:\Program Files (x86)\MakeMKV\'
+        $makemkvpath = 'C:\Program Files (x86)\MakeMKV'
+        if(!(test-path $todir)){ $todir = read-host -Prompt "Please enter path to save files to" }
+        $dir1 = $todir
+        $dir1 = $dir1 -replace '\\','/'
+        if($dir1[$dir1.Length -1] -eq '/'){$dir1 = $dir1.Substring(0,$($dir1.length-1)) }
+
         if (!(Test-Path $makemkvpath\makemkvcon.exe))
         {
             $makemkvpath = Read-Host 'What is your makemkvcon.exe folder path'
         }
-        echo "Welcome to autorip."
-        $dir1 = Read-Host 'Directory to save to'
-        $device = Read-Host 'What is your disc drive letter'
+        echo "Welcome to autorip-v2."
+        if(!($device)){
+        $device = read-host -prompt "Please enter your drive letter. Example: D"
+        }
         $semicolon = ":"
+        $x = 0
         
         try 
         {
-            while (1-eq 1)
+            while ($x -lt 100)
             {
                 # Grab WMI object
             $w = Get-WmiObject -Class Win32_LogicalDisk -Filter "DriveType = 5 and DeviceID = '$device$semicolon' " -errorvariable MyErr -erroraction Stop;       
@@ -45,26 +57,22 @@ Function Get-ADComputerCDRomInfo
                     if ($deviceId.Length -eq 0) 
                     {
                         echo "No drive found."
+                        $x++
                     }
                     elseif ($volumeName.Length -eq 0)
                     {
                         echo "No disc mounted."
+                        $x++
                     }
                     else 
                     {
                         echo 'Mounted'
-                        $dir1 = "C:\library\rips\$volumeName"
-                        New-Item $dir1 -type directory -force
-                        invoke-expression "& '$makemkvpath\makemkvcon.exe' --minlength=1200 mkv disc:0 all C:\library\rips\$volumename\"
-                        try
-                        {
-                        mv $dir1\title00.mkv $dir1\$volumeName.mkv
-                        }
-                        finally
-                        {
-                        }
-                        Show-BalloonTip -Title 'Autorip' -MessageType Info -Message "$volumeName is ripped" -Duration 10000
+                        $dir2 = $dir1 + '/' + $volumeName
+                        if(!(test-path $dir2)){New-Item $dir2 -type directory -force}
+                        &"$makemkvpath\makemkvcon.exe" "--minlength=300" "mkv" "disc:0" "all" "$dir2"
                         Eject -id "$deviceId"
+                        echo "Rip Complete. Beginning Transcode."
+                        get-childitem $dir2 | %{ Transcode-WithFFmpegGPU -mediaPath $_.fullname}
                     }
                }
             start-sleep -seconds 10
@@ -83,31 +91,13 @@ Function Get-ADComputerCDRomInfo
             }
             echo $err
         }
+        finally {
+        $fileList = Get-ChildItem "$dir2/"
+        $filelist |%{write-host $_.BaseName }
+        }
     }
-    function Show-BalloonTip {            
-[cmdletbinding()]            
-param(            
- [parameter(Mandatory=$true)]            
- [string]$Title,            
- [ValidateSet("Info","Warning","Error")]             
- [string]$MessageType = "Info",            
- [parameter(Mandatory=$true)]            
- [string]$Message,            
- [string]$Duration=10000            
-)            
 
-[system.Reflection.Assembly]::LoadWithPartialName('System.Windows.Forms') | Out-Null            
-$balloon = New-Object System.Windows.Forms.NotifyIcon            
-$path = Get-Process -id $pid | Select-Object -ExpandProperty Path            
-$icon = [System.Drawing.Icon]::ExtractAssociatedIcon($path)            
-$balloon.Icon = $icon            
-$balloon.BalloonTipIcon = $MessageType            
-$balloon.BalloonTipText = $Message            
-$balloon.BalloonTipTitle = $Title            
-$balloon.Visible = $true            
-$balloon.ShowBalloonTip($Duration)            
 
-}
 function Eject
 { 
     param($id)
@@ -116,6 +106,66 @@ function Eject
     [System.Runtime.Interopservices.Marshal]::ReleaseComObject($sa) | Out-Null
     Remove-Variable sa 
 } 
- 
-# Execute this function
-Get-ADComputerCDRomInfo
+
+
+
+Function Transcode-WithFFmpegGPU
+{
+
+param (
+    [string]$mediaPath = ""
+)
+
+$file = Get-Item -Path $mediaPath -ErrorAction stop
+
+
+if($file.extension){
+$ffmpeg = "C:\Program Files\ffmpeg\bin\ffmpeg.exe"
+	$oldFile = $file.DirectoryName + "\" + $file.BaseName + $file.Extension;
+	$newFile = $file.DirectoryName + "\" + $file.BaseName + '-converted' + ".mkv";
+    $ffarg1 = "-hide_banner"
+    $ffarg2 = "-analyzeduration"
+    $ffarg3 = "200M"
+    $ffarg4 = "-probesize"
+    $ffarg5 = "200M"
+    $ffarg6 = "-fix_sub_duration"	
+    $ffarg7 = "-n"
+	$ffarg8 = "-fflags"
+	$ffarg9 = "+genpts"
+    $ffarg10 = "-hwaccel"
+    $ffarg11 = "cuvid"
+    $ffarg12 = "-c:v"
+    $ffarg13 = "mpeg2_cuvid"
+	$ffarg14 = "-i"
+	$ffarg15 = "$oldFile"
+    $ffarg16 = "-map"
+    $ffarg17 = "0"
+    $ffarg18 = "-c"
+    $ffarg19 = "copy"
+	$ffarg20 = "-codec:v"
+    $ffarg21 = "h264_nvenc"
+	$ffarg22 = "-preset"
+    $ffarg23 = "llhq"
+    $ffarg24 = "-profile:v"
+    $ffarg25 = "high"
+    $ffarg37 = "-qmax"
+    $ffarg38 = "51"
+    $ffarg39 = "-qmin"
+    $ffarg40 = "15"
+    $ffarg26 = "-b:v"
+    $ffarg27 = "5M"
+	$ffarg28 = "-codec:a"
+	$ffarg29 = "copy"
+    $ffarg34 = "-codec:s"
+    $ffarg35 = "copy"
+	$ffarg36 = "$newFile"
+    $ffargs = @( $ffarg1, $ffarg2, $ffarg3, $ffarg4, $ffarg5, $ffarg6, $ffarg7, $ffarg8, $ffarg9, $ffarg14, $ffarg15, $ffarg16, $ffarg17, $ffarg18, $ffarg19, $ffarg20, $ffarg21, $ffarg22, $ffarg23, $ffarg24, $ffarg25, $ffarg37, $ffarg38, $ffarg39, $ffarg40, $ffarg26, $ffarg27, $ffarg28, $ffarg29, $ffarg30, $ffarg31, $ffarg32, $ffarg33, $ffarg34, $ffarg35, $ffarg36)
+	$ffcmd = &$ffmpeg $ffargs 2>&1 | write-host
+    remove-item $oldfile
+}
+else
+{
+Write-host "Please Specify mediaPath."
+Write-host "Example: C:\your\path\to\file.mkv"
+}
+}
