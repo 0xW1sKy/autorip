@@ -51,7 +51,7 @@ param (
                     if(!(Test-Path $Dir2)){
                         New-Item $Dir2 -Type Directory -Force
                     }
-                    &"$MakeMKVPath\makemkvcon.exe" "--minlength=300" "mkv" "disc:0" "all" "$Dir2"
+                    &"$MakeMKVPath\makemkvcon.exe" "--minlength=300" "--cache=2048MB" "--upnp=false" "--progress=-same" "mkv" "disc:0" "all" "$Dir2"
                     Remove-Media -id "$DeviceId"
                     Write-Host "Rip Complete. Beginning Transcode."
                     Get-ChildItem $Dir2 | ForEach-Object {
