@@ -1,18 +1,4 @@
-    #This program is free software; you can redistribute it and/or modify
-    #it under the terms of the GNU General Public License as published by
-    #the Free Software Foundation; either version 2 of the License, or
-    #(at your option) any later version.
-
-    #This program is distributed in the hope that it will be useful,
-    #but WITHOUT ANY WARRANTY; without even the implied warranty of
-    #MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    #GNU General Public License for more details.
-
-    #You should have received a copy of the GNU General Public License along
-    #with this program; if not, write to the Free Software Foundation, Inc.,
-    #51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
-
-    #usage: New-AutoRip -ToDir "C:\rips" -device "D"
+#usage: New-AutoRip -ToDir "C:\rips" -device "D"
 
 function New-AutoRip {
 [CmdletBinding()]
@@ -112,40 +98,7 @@ Function New-TranscodeWithFFmpegGPU {
     $ffmpeg = "C:\Program Files\ffmpeg\bin\ffmpeg.exe"
         $oldFile = $File.DirectoryName + "\" + $File.BaseName + $File.Extension;
         $newFile = $File.DirectoryName + "\" + $File.BaseName + '-converted' + ".mkv";
-        $ffarg1 = "-hide_banner"
-        $ffarg2 = "-analyzeduration"
-        $ffarg3 = "200M"
-        $ffarg4 = "-probesize"
-        $ffarg5 = "200M"
-        $ffarg6 = "-fix_sub_duration"
-        $ffarg7 = "-n"
-        $ffarg8 = "-fflags"
-        $ffarg9 = "+genpts"
-        $ffarg10 = "-hwaccel"
-        $ffarg11 = "cuvid"
-        $ffarg12 = "-c:v"
-        $ffarg13 = "mpeg2_cuvid"
-        $ffarg14 = "-i"
-        $ffarg15 = "$oldFile"
-        $ffarg16 = "-map"
-        $ffarg17 = "0"
-        $ffarg18 = "-c"
-        $ffarg19 = "copy"
-        $ffarg20 = "-codec:v"
-        $ffarg21 = "h264_nvenc"
-        $ffarg22 = "-preset"
-        $ffarg23 = "llhq"
-        $ffarg24 = "-profile:v"
-        $ffarg25 = "high"
-        $ffarg26 = "-b:v"
-        $ffarg27 = "5M"
-        $ffarg28 = "-codec:a"
-        $ffarg29 = "copy"
-        $ffarg34 = "-codec:s"
-        $ffarg35 = "copy"
-        $ffarg36 = "$newFile"
-        $ffargs = @( $ffarg1, $ffarg2, $ffarg3, $ffarg4, $ffarg5, $ffarg6, $ffarg7, $ffarg8, $ffarg9, $ffarg14, $ffarg15, $ffarg16, $ffarg17, $ffarg18, $ffarg19, $ffarg20, $ffarg21, $ffarg22, $ffarg23, $ffarg24, $ffarg25, $ffarg26, $ffarg27, $ffarg28, $ffarg29, $ffarg30, $ffarg31, $ffarg32, $ffarg33, $ffarg34, $ffarg35, $ffarg36)
-        $ffcmd = &$ffmpeg $ffargs 2>&1 | Write-Host
+        &$ffmpeg "-hide_banner" "-analyzeduration" "200M" "-probesize" "200M" "-n" "-fflags" "+genpts" "-hwaccel" "cuvid" "-c:v" "mpeg2_cuvid" "-i" "$oldFile" "-codec:v" "hevc_nvenc" "-preset" "llhq" "-b:v" "8M" "-codec:a" "copy" "-codec:s" "copy" "$newFile" 2>&1 | write-host
         Remove-Item $oldfile
     }
     else {
