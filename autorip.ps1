@@ -21,7 +21,7 @@ param (
     [string]$Device = ""
     )
     # Function variables
-    $DeviceId = ""
+    $DeviceID = ""
     $VolumeName = ""
     $Err = ""
     $MakeMKVPath = 'C:\Program Files (x86)\MakeMKV'
@@ -38,51 +38,66 @@ param (
     }
     Write-Host "Welcome to autorip-v2."
     if(!($Device)) {
-        $Device = Read-Host -prompt "Please enter your drive letter. Example: D"
+        $Device = Read-Host -Prompt "Please enter your drive letter. Example: D"
     }
-    $SemiColon = ":"
     $X = 0
     try {
         do {
             # Grab WMI object
-            $W = Get-WmiObject -Class Win32_LogicalDisk -Filter "DriveType = 5 and DeviceID = '$Device$semicolon' " -errorvariable MyErr -erroraction Stop;
-            foreach($Device in $W) {
-                # Populate the properties
-                $DeviceId = $Device.DeviceID
-                $VolumeName = $Device.VolumeName
-                # If the drive letter length is 0, populate the default error
-                if ($DeviceId.Length -eq 0) {
-                    Write-Host "No drive found."
-                    $X++
-                }
-                elseif ($VolumeName.Length -eq 0) {
-                    Write-Host "No disc mounted."
-                    $X++
-                }
-                else {
-                    Write-Host 'Mounted'
-                    $Dir2 = $Dir1 + '/' + $VolumeName
-                    if(!(Test-Path $Dir2)){
-                        New-Item $Dir2 -Type Directory -Force
+            $W = Get-WmiObject -Class Win32_LogicalDisk -Errorvariable MyErr -ErrorAction Stop | Where-Object {
+                ($_.DeviceID -like "*$Device*") -and ($_.DriveType -eq 5)
+            } | Select-Object DeviceID, DriveType, VolumeName
+            # Checks to see if it return more than one device
+            if($W -is [System.Array]) {
+                foreach($Device in $W) {
+                    # Populate the properties
+                    $DeviceID = $Device.DeviceID
+                    $VolumeName = $Device.VolumeName
+                    # If the drive letter length is 0, populate the default error
+                    if ($DeviceID.Length -eq 0) {
+                        Write-Host "No drive found."
+                        $X++
                     }
-                    &"$MakeMKVPath\makemkvcon.exe" "--minlength=300" "mkv" "disc:0" "all" "$Dir2"
-                    Remove-Media -id "$DeviceId"
-                    Write-Host "Rip Complete. Beginning Transcode."
-                    Get-ChildItem $Dir2 | ForEach-Object {
-                        New-TranscodeWithFFmpegGPU -mediaPath $_.fullname
+                    elseif ($VolumeName.Length -eq 0) {
+                        Write-Host "No disc mounted."
+                        $X++
+                    }
+                    else {
+                        Write-Host 'Mounted'
+                        $Dir2 = $Dir1 + '/' + $VolumeName
+                        if(!(Test-Path $Dir2)){
+                            New-Item $Dir2 -Type Directory -Force
+                        }
                     }
                 }
-            Start-Sleep -Seconds 10
             }
+            # Only one device found
+            else {
+                $DeviceID = $W.DeviceID
+                $VolumeName = $W.VolumeName
+                Write-Host 'Mounted'
+                $Dir2 = $Dir1 + '/' + $VolumeName
+                if(!(Test-Path $Dir2)){
+                    New-Item $Dir2 -Type Directory -Force
+                }
+            }
+            &"$MakeMKVPath\makemkvcon.exe" "--minlength=300" "mkv" "disc:0" "all" "$Dir2"
+            Remove-Media -id "$DeviceID"
+            Write-Host "Rip Complete. Beginning Transcode."
+            Get-ChildItem $Dir2 | ForEach-Object {
+                New-TranscodeWithFFmpegGPU -MediaPath $_.fullname
+            }
+            Start-Sleep -Seconds 10
         }
         while ($X -lt 100)
     }
-    Catch [system.exception] {
+    Catch [System.Exception] {
         # Let's make sure we're populating the correct error
         if ($MyErr.Count -gt 0) {
             $Err = $MyErr
-        } else {
-            $Err = $Error[0].tostring()
+        }
+        else {
+            $Err = $Error[0].ToString()
         }
         Write-Host $Err
     }
@@ -91,14 +106,13 @@ param (
         $FileList | ForEach-Object {
             Write-Host $_.BaseName
         }
-    }
+    }>
 }
-function Remove-Media
-{
+function Remove-Media{
     [CmdletBinding()]
-    param($id)
+    param($ID)
     $SA = New-Object -com Shell.Application
-    $SA.Namespace(17).ParseName($id).InvokeVerb("Eject")
+    $SA.Namespace(17).ParseName($ID).InvokeVerb("Eject")
     [System.Runtime.Interopservices.Marshal]::ReleaseComObject($SA) | Out-Null
     Remove-Variable SA
 }
@@ -107,7 +121,7 @@ Function New-TranscodeWithFFmpegGPU {
     param (
         [string]$MediaPath = ""
     )
-    $File = Get-Item -Path $MediaPath -ErrorAction stop
+    $File = Get-Item -Path $MediaPath -ErrorAction Stop
     if($File.extension) {
     $ffmpeg = "C:\Program Files\ffmpeg\bin\ffmpeg.exe"
         $oldFile = $File.DirectoryName + "\" + $File.BaseName + $File.Extension;
@@ -149,7 +163,7 @@ Function New-TranscodeWithFFmpegGPU {
         Remove-Item $oldfile
     }
     else {
-    Write-Host "Please Specify mediaPath."
+    Write-Host "Please Specify Media Path."
     Write-Host "Example: C:\your\path\to\file.mkv"
     }
 }
