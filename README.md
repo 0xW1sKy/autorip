@@ -14,12 +14,14 @@ To do
  - ~~Disc detection~~
  - Asynchronous transcode with queue
  - ~~Nvidia GPU Transcode~~
+ - ~~H.265~~
  - Automatic file detection/rename
- - Clean up my shitty code. (I should really read a style guide one of these days.)
+ - ~~Clean up my shitty code. (I should really read a style guide one of these days.)~~ 
  - Add more error handling
  - Add -help switch
  - Find a better way to do disc drive detection
  - add no-gpu switch. (this should be fairly simple to accomplish.)
+ - automatic de-interlace detection?
 
 ---
 Original idea/script from ejb1123.
